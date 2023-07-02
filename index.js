@@ -71,24 +71,37 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
 
 app.get('/api/users/:_id/logs', async (req, res) => {
   const { _id } = req.params;
-  const { __v: ignore1, ...user } = await User.findById(_id).lean();
-  // const {
-  //   __v: ignore2,
-  //   _id: ignore3,
-  //   userId,
-  //   ...exercisesRest
-  // } = await Exercise.find({ userId: _id });
+  const { from, to, limit } = req.query;
 
-  const data = await Exercise.find({userId: _id}).lean();
-  const exercises = data.map(({__v, _id, userId, ...rest}) => rest);
+  const user = await User.findById(_id).lean();
 
-  const log = {
+  let exercises = await Exercise.find({ userId: _id }).lean();
+
+  if (from) {
+    const fromDate = new Date(from);
+    exercises = exercises.filter(
+      (exercise) => new Date(exercise.date) >= fromDate
+    );
+  }
+
+  if (to) {
+    const toDate = new Date(to);
+    exercises = exercises.filter(
+      (exercise) => new Date(exercise.date) <= toDate
+    );
+  }
+
+  if (limit) {
+    exercises = exercises.slice(0, Number(limit));
+  }
+
+  const obj = {
+    count: exercises.length,
+    log: exercises,
     ...user,
-    exercises,
   };
-  // res.json(log);
 
-  res.json({count: exercises.length, log: exercises, ...user});
+  res.json(obj);
 });
 
 const listener = app.listen(PORT || 3000, () => {

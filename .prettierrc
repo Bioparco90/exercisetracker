@@ -1,0 +1,7 @@
+{
+    "semi": true,
+    "editor.formatOnSave": true,
+    "singleQuote": true,
+    "quoteProps": "as-needed",
+    "proseWrap": "preserve"
+}
